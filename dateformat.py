@@ -11,7 +11,7 @@ else:
     HAVE_PYTZ = True
 
 
-__version__ = "0.9.1"
+__version__ = "0.9.2"
 
 
 RE_0_TO_60 = "[0-6]?[0-9]"  # In some special cases, e.g. seconds, can actually be '60'

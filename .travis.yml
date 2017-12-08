@@ -1,6 +1,5 @@
 language: python
 python:
-  - "3.2"
   - "3.3"
   - "3.4"
   - "3.5"
@@ -10,6 +9,6 @@ python:
 install:
   - pip install python-dateutil iso8601 pytest
 script:
-  - py.test
+  - py.test test_dateformat.py
   - pip install pytz
-  - py.test
+  - py.test test_dateformat.py

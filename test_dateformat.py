@@ -1,6 +1,11 @@
 import dateutil.parser
 
-import pytz
+try:
+    import pytz
+    HAVE_PYTZ = True
+except ImportError:
+    HAVE_PYTZ = False
+
 import unittest
 import datetime
 import dateformat
@@ -98,23 +103,22 @@ class TestDateFormat(unittest.TestCase):
         date_format = dateformat.DateFormat(dateformat.ISOFORMAT_DATETIME)
         assert date_format.parse("2017-12-6T11:55:44") == expected
         assert date_format.format(date_format.parse("2017-12-6T11:55:44")) == "2017-12-06T11:55:44"
+    if HAVE_PYTZ:
+        def test_parsing_dates_with_all_named_timezones(self):
+            time_base = "2017-12-6T11:55:44"
+            datetime_base = datetime.datetime(2017, 12, 6, 11, 55, 44)
+            date_format = dateformat.DateFormat(f"{dateformat.ISOFORMAT_DATETIME} UTC")
+            for timezone in pytz.all_timezones:
+                source = f"{time_base} {timezone}"
+                parsed = date_format.parse(source)
+                tzinfo = pytz.timezone(timezone)
+                assert parsed.tzinfo.zone == tzinfo.zone
+                assert parsed == tzinfo.localize(datetime_base)
 
-    def test_parsing_dates_with_all_named_timezones(self):
-        time_base = "2017-12-6T11:55:44"
-        datetime_base = datetime.datetime(2017, 12, 6, 11, 55, 44)
-        date_format = dateformat.DateFormat(f"{dateformat.ISOFORMAT_DATETIME} UTC")
-        for timezone in pytz.all_timezones:
-            source = f"{time_base} {timezone}"
-            parsed = date_format.parse(source)
-            tzinfo = pytz.timezone(timezone)
-            assert parsed.tzinfo.zone == tzinfo.zone
-            assert parsed == tzinfo.localize(datetime_base)
-
-    def test_formatting_dates_with_named_timezones(self):
-        date = datetime.datetime(2017, 12, 6, 11, 55, 44)
-        local_date = pytz.timezone("Europe/Warsaw").localize(date)
-        date_format = dateformat.DateFormat(f"{dateformat.ISOFORMAT_DATETIME} (UTC)")
-        assert date_format.format(local_date) == "2017-12-06T11:55:44 (Europe/Warsaw)"
+        def test_formatting_dates_with_named_timezones(self):
+            date = datetime.datetime(2017, 12, 6, 11, 55, 44)
+            local_date = pytz.timezone("Europe/Warsaw").localize(date)
+            date_format = dateformat.DateFormat(f"{dateformat.ISOFORMAT_DATETIME} (UTC)")
 
 
 if __name__ == '__main__':

@@ -1,4 +1,4 @@
-# dateformat
+# dateformat ![build status](https://travis-ci.org/stestagg/dateformat.svg?branch=master)
 
 `dateformat` does two things:  turn `datetime` objects into strings, and turn strings into `datetime` objects.
 It's goal is to do these things simply and well, and to satisfy the following criteria:

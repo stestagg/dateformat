@@ -93,7 +93,7 @@ setup(
     # for example:
     # $ pip install -e .[dev,test]
     extras_require={
-        'test': ['dateutil', 'iso8601', 'pytz'],
+        'test': ['python-dateutil', 'iso8601', 'pytz'],
     },
 
     # If there are data files included in your packages that need to be

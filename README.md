@@ -12,6 +12,88 @@ dateformat is designed to satisfy a specific set of requirements that no other l
  * Be explicit about the expected format to prevent heuristic errors
 
 
+# Usage
+
+All functionality is based around DateFormat() objects:
+
+## `def __init__(self, spec, is_24hour=None)`
+
+create a dateformat object from the provided spec string.
+
+```
+>>> from dateformat import DateFormat
+
+>>> date_format = DateFormat("YYYY-MM-DD hh:mm:ss.SSSS+HH:MM")
+```
+
+If is_24hour is not provided, the format will be in 12-hour mode if an am/pm 
+part is present in the spec, otherwise, dates will be in 24-hour mode.
+
+DateFormat instances have two methods:
+
+## `def parse(self, data)`
+
+Parse a string(`data`) containing a date into a datetime object.
+
+```
+>>> date = date_format.parse("2017-06-03 15:32:00.2364-02:00")
+
+datetime.datetime(2017, 6, 3, 15, 32, 0, 236400, tzinfo=datetime.timezone(datetime.timedelta(-1, 79200)))
+```
+
+## `def format(self, date)`
+
+Format the passed in `datetime.datetime` object (`date`) as a string:
+
+```
+>>> print(date_format.format(date))
+2017-06-03 15:32:00.2364-02:00
+```
+
+## Timezones
+
+If any part of the format provides a timezone, or UTC offset, then parsing 
+produces dates with a timezone indicating the relevant UTC offset.
+
+Likewise, if a dateformat has a timezone part, then dates passed to `.format()`
+must include a tzinfo value.
+
+If pytz is available, then some level of named timezone support is provided.
+
+## Leading zeros
+
+
+
+## Date format specification
+| Part | Example | Description |
+|---------|---------|---------------|
+| `+HHMM` | -0515 | A UTC offset provided as a 2-digit hour, and 2-digit minute, with no separator |
+| `+HH:MM` | -05:15 | A UTC offset provided as a 2-digit hour, and 2-digit minute, with a ':' separator |
+| `+HH` | -05 | A UTC offset provided as a 2-digit hour only |
+| `Dddddd` | Monday | The full locale-specific day of the week (Note, this value is ignored during date parsing, but added during date format) |
+| `Ddd` | Mon | The locale-specific short name for the day of the week (Ignored during parsing) |
+| `DD` | 05 | The zero-padded day of the month. |
+| `MMMMM` | September | Month as locale’s full name |
+| `MMM` | Sep | Month as locale’s abbreviated name |
+| `YYYY` | 2017 | Year with century as a number |
+| `YY` | 17 | Year without century as a zero-padded number |
+| `hh` | 09 | Hour as a zero-padded number |
+| `mm` | 06 | Minute as a zero-padded number |
+| `ss` | 45 | Second as a zero-padded number |
+| `SSSSSS` | 123456 | Microsecond as a zero-padded decimal number |
+| `SSSS`   | 1234 | 100-microseconds as a zero-padded number |
+| `SSS` | 123 | milliseconds as a zero-padded number |
+| `SS` | 12 | 10-milliseconds as a zero-padded number |
+| `am` `Am` `AM` `pm` `Pm` `PM` | am | either AM or PM depending on the hour.  `.format()` matches the case of the spec.  If present, the dateformat will default to 12-hour mode |
+| `of` | | Ignored during parsing, added during formtting |
+| `st` | th | The appropriate suffix for the day of the month, for example '1_st_ July', '2_nd_ March' |
+| `␣` | T | Matches either the character 'T' or a space ' '.  During formatting, 'T' is always used (this is provided to iso8601 flexibility) |
+| space | | Matches one or more spaces during parsing.  During formatting, one space will be output |
+| any of `:/-.,TZ()` | | Ignored during parsing, output as-is during formatting |
+
+
+# Library comparison
+
 ## dateformat ⇄ datetime (builtin python module)
 
 Dateformat is *not* trying to be a replacement for the builtin datetime module.  `datetime.datetime` objects are used as the input/output to the parsing and formatting methods.

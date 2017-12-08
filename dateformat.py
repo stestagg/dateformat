@@ -373,7 +373,7 @@ class DateFormat:
         MicrosecondPart("SS", r"\d{2}", value_multiplier=10000),
         AmPmPart("AM"),AmPmPart("Am"),AmPmPart("am"),
         AmPmPart("PM"),AmPmPart("Pm"),AmPmPart("pm"),
-        IgnorePart(" ", r"\s+"),
+        IgnorePart(" ", r"\s+?"),
         IgnorePart('of', 'of'),
         DayOfMonthSuffixPart('st', '(?:st|nd|rd|th)'),
         IgnorePart("␣", r"[T ]", format_value="T")

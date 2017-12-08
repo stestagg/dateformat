@@ -1,16 +1,19 @@
 # dateformat
-A simple, fast date parsing/formatting library for python
 
-> But why another date library?
+`dateformat` does two things:  turn `datetime` objects into strings, and turn strings into `datetime` objects.
+It's goal is to do these things simply and well, and to satisfy the following criteria:
 
-dateformat is designed to satisfy a specific set of requirements that no other library quite provides:
-
- * Be fast (see below for benchmarks)
+ * Be fast enough (see below for benchmarks)
  * Handle a variety of date formats from multiple sources
  * Parse and format dates in many timezones and with many timezone offsets
- * Represent the format in a way that a non-technical person may understand
+ * Represent the expected format in a way that a non-technical person may understand
  * Be explicit about the expected format to prevent heuristic errors
 
+> "But why another date library?"
+
+There isn't currently a python library I've been able to find that matches these 
+requirements well enough for my use-cases.  [`Arrow`](http://arrow.readthedocs.io/en/latest/)
+ comes closest, but still isn't quite suitable performance-wise.
 
 # Usage
 

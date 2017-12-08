@@ -16,7 +16,7 @@ dateformat is designed to satisfy a specific set of requirements that no other l
 
 All functionality is based around DateFormat() objects:
 
-## `def __init__(self, spec, is_24hour=None)`
+### `def __init__(self, spec, is_24hour=None)`
 
 create a dateformat object from the provided spec string.
 
@@ -26,22 +26,21 @@ create a dateformat object from the provided spec string.
 >>> date_format = DateFormat("YYYY-MM-DD hh:mm:ss.SSSS+HH:MM")
 ```
 
-If is_24hour is not provided, the format will be in 12-hour mode if an am/pm 
+If `is_24hour` is not provided, the format will be in 12-hour mode if an am/pm 
 part is present in the spec, otherwise, dates will be in 24-hour mode.
 
 DateFormat instances have two methods:
 
-## `def parse(self, data)`
+### `def parse(self, data)`
 
 Parse a string(`data`) containing a date into a datetime object.
 
 ```
 >>> date = date_format.parse("2017-06-03 15:32:00.2364-02:00")
-
 datetime.datetime(2017, 6, 3, 15, 32, 0, 236400, tzinfo=datetime.timezone(datetime.timedelta(-1, 79200)))
 ```
 
-## `def format(self, date)`
+### `def format(self, date)`
 
 Format the passed in `datetime.datetime` object (`date`) as a string:
 
@@ -62,7 +61,13 @@ If pytz is available, then some level of named timezone support is provided.
 
 ## Leading zeros
 
+All numeric parts of the date format are zero-padded to the number of characters
+in the spec.  I.e.  'DD' means that the day of the month is zero-padded to 2-digits.
 
+During parsing, a missing leading zero is usually ignored, but if there is no separator
+between parts (for example:  YYYYMMDD), then a missing leading zero will cause an error or bad value.
+
+Currently, all formatted dates are zero-padded, in the future, this may be controllable.
 
 ## Date format specification
 | Part | Example | Description |
@@ -87,7 +92,7 @@ If pytz is available, then some level of named timezone support is provided.
 | `am` `Am` `AM` `pm` `Pm` `PM` | am | either AM or PM depending on the hour.  `.format()` matches the case of the spec.  If present, the dateformat will default to 12-hour mode |
 | `of` | | Ignored during parsing, added during formtting |
 | `st` | th | The appropriate suffix for the day of the month, for example '1_st_ July', '2_nd_ March' |
-| `␣` | T | Matches either the character 'T' or a space ' '.  During formatting, 'T' is always used (this is provided to iso8601 flexibility) |
+| `␣` | T | (Unicode OPEN BOX - U+2423) Matches either the character 'T' or a space ' '.  During formatting, 'T' is always used (this is provided to improve flexibility when parsing iso8601 formats) |
 | space | | Matches one or more spaces during parsing.  During formatting, one space will be output |
 | any of `:/-.,TZ()` | | Ignored during parsing, output as-is during formatting |
 
@@ -102,7 +107,7 @@ It is designed as a replacement for the  `datetime.datetime.strftime` and `datet
 
  * better timezone handling
  * a simpler/more common syntax for specifying the date formats
- * faster parsing
+ * slightly faster parsing
 
 ## dateformat ⇄ dateutil.parser.parse()
 

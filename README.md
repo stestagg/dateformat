@@ -45,6 +45,8 @@ the `benchmark/` dir contains some simple scripts to show how the relative libra
 
 Running on a 2016 macbook pro, on Python 3.6.3 gave the following results (best of 3 runs):
 
+(Please note, the parse time chart y-axis has been clamped to 1s, but dateparser took 16s to complete)
+
 ![chart showing relative date parse performance](https://github.com/stestagg/dateformat/raw/master/benchmark/parse_times.png)
 
 ![chart showing relative date format performance](https://github.com/stestagg/dateformat/raw/master/benchmark/format_times.png)

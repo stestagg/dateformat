@@ -45,14 +45,5 @@ the `benchmark/` dir contains some simple scripts to show how the relative libra
 
 Running on a 2016 macbook pro, on Python 3.6.3 gave the following results (best of 3 runs):
 
-
-| Library    | Time to parse  10,000 dates (ms) | Parse time relative to `strptime` (lower is better) | Time to format  10,000 dates (ms) | Format time relative to `strftime` (lower is better) |
-|------------|----------------------------------|-----------------------------------------------------|-----------------------------------|------------------------------------------------------|
-| datetime   | 118                              | 1 x                                                 | 37.8                              | 1 x                                                  |
-| dateformat | 88.3                             | 0.75 x                                              | 92.9                              | 2.5 x                                                |
-| arrow      | 565                              | 4.8 x                                               | 124                               | 3.3 x                                                |
-| dateutil   | 815                              | 6.9 x                                               | _NA_                              |                                                      |
-| iso8601    | 125                              | 1.06 x                                              | _NA_                              |                                                      |
-| ciso8601   | 3.27                             | 0.028 x                                             | _NA_                              |                                                      |
-| dateparser | 455                              | 3.89 x                                              | _NA_                              |                                                      |
+![chart showing relative date parse performance](https://github.com/stestagg/dateformat/raw/master/benchmark/parse_times.png)
 

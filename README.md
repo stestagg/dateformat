@@ -104,8 +104,8 @@ Currently, all formatted dates are zero-padded, in the future, this may be contr
 
 | Format                   | Example                |
 |--------------------------|------------------------|
-| `YYYY-MM-DDThh:mm:ss`    | 2017-06-06T09:45:15.   |
-| `YYYYMMDDhhmmss`         | 20170606094515.        |
+| `YYYY-MM-DDThh:mm:ss`    | 2017-06-06T09:45:15    |
+| `YYYYMMDDhhmmss`         | 20170606094515         |
 | `YYYYMMDDhhmmss.SSSSSSZ` | 20170606094515.123456Z |
 | `MM/DD/YY hh:mm+HHMM`    | 06/06/17 09:45-0500    |
 

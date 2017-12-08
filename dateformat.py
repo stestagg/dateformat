@@ -296,7 +296,7 @@ class UTCOffsetPart(DateFormatPart):
 if HAVE_PYTZ:
     class NamedTimezeonePart(DateFormatPart):
 
-        FULL_TZ_NAME_RE = r"(?:[A-Z_]{2,12}?/)+?[A-Z\-_]{3,14}[+-]?\d{0,2}"
+        FULL_TZ_NAME_RE = r"(?:[A-Z_]{2,12}?/)+?[A-Z\-_]{3,20}[+-]?\d{0,2}"
         SHORT_TZ_NAME_RE = r"[A-Z]{1}[A-Z+\-_\d]{0,8}"
         RE = f"{FULL_TZ_NAME_RE}|{SHORT_TZ_NAME_RE}"
 

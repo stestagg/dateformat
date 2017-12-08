@@ -10,6 +10,6 @@ python:
 install:
   - pip install python-dateutil iso8601 pytest
 script:
-  - pytest
+  - py.test
   - pip install pytz
-  - pytest
+  - py.test

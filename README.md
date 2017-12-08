@@ -47,3 +47,5 @@ Running on a 2016 macbook pro, on Python 3.6.3 gave the following results (best 
 
 ![chart showing relative date parse performance](https://github.com/stestagg/dateformat/raw/master/benchmark/parse_times.png)
 
+![chart showing relative date format performance](https://github.com/stestagg/dateformat/raw/master/benchmark/format_times.png)
+

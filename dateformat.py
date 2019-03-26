@@ -38,6 +38,9 @@ ISOFORMAT_BASIC_DATE = "YYYYMMDD"
 ISOFORMAT_BASIC_TIME = "hhmmss"
 
 
+RAISE = object()
+
+
 class DateFormatPart:
 
     """
@@ -457,10 +460,12 @@ class DateFormat:
             raise ValueError(f"Could not parse: {bit}")
         return ()
 
-    def parse(self, data):
+    def parse(self, data, default=RAISE):
         matches = self._parser_re.match(data)
         if matches is None:
-            raise ValueError(f"date '{data}' does not match format '{self.spec_str}'")
+            if default is RAISE:
+                raise ValueError(f"date '{data}' does not match format '{self.spec_str}'")
+            return default
         parts = matches.groups()
         today = datetime.date.today()
         context = {"year": today.year, "month": today.month, "day": today.day}

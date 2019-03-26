@@ -44,6 +44,13 @@ class TestDateFormat(unittest.TestCase):
         result = parser.parse("10/12/12 16:23")
         self.assertEqual(result, datetime.datetime(2012, 12, 10, 16, 23))
 
+    def test_parsing_invalid_date_returns_default(self):
+        parser = dateformat.DateFormat("DD/MM/YY hh:mm")
+        with self.assertRaises(ValueError):
+            parser.parse('xxx')
+        self.assertIsNone(parser.parse('xxx', None))
+        self.assertEqual(parser.parse('xxx', '123'), '123')
+
     def test_parsing_various_dates_matches_dateutil_results(self):
         for format, date in self.SAMPLE_LIST:
             expected = dateutil.parser.parse(date)

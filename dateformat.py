@@ -1,17 +1,19 @@
 import calendar
 import datetime
+import math
+import time
 import re
 
 
 try:
-    import pytz 
+    import pytz
 except ImportError:
     HAVE_PYTZ = False
 else:
     HAVE_PYTZ = True
 
 
-__version__ = "0.9.2"
+__version__ = "0.9.3"
 
 
 RE_0_TO_60 = "[0-6]?[0-9]"  # In some special cases, e.g. seconds, can actually be '60'
@@ -25,8 +27,8 @@ SECONDS_IN_DAY = SECONDS_IN_HOUR * 24
 
 
 ISOFORMAT_DATE = "YYYY-MM-DD"
-# This format explicitly leaves out the micro/milli/nano second component, 
-# as the precision of the sub-second measurement in iso8601 is undefined, 
+# This format explicitly leaves out the micro/milli/nano second component,
+# as the precision of the sub-second measurement in iso8601 is undefined,
 # and it is easy to add in the correct .SSSS component  once the precision
 # is agreed/known
 ISOFORMAT_TIME = "hh:mm:ss"
@@ -41,8 +43,8 @@ class DateFormatPart:
     """
     Responsible for an element of a date format, both parsing, and formatting.
 
-    For example, to parse 4-digit years, a DateFormatPart with format_str of 
-    'YYYY' exists. This part has the logic to extract the year from a string, 
+    For example, to parse 4-digit years, a DateFormatPart with format_str of
+    'YYYY' exists. This part has the logic to extract the year from a string,
     and to format the year as a 4-digit string from a date.
     """
 
@@ -64,7 +66,7 @@ class DateFormatPart:
 
     def partition_spec(self, string):
         """
-        Given a string of the form:  "YYYY-MM-DD", and assuming this part 
+        Given a string of the form:  "YYYY-MM-DD", and assuming this part
         matches on 'MM',
         return a tuple of the form ("YYYY-", "MM", "-DD"), as per the standard
          string.partition function
@@ -73,7 +75,7 @@ class DateFormatPart:
 
     def __repr__(self):
         return f"<{type(self).__name__}: '{self.format_str}'>"
-        
+
     def format_part(self, format):
         raise NotImplementedError(
             f"{type(self)} has not implemented 'format_part'"
@@ -86,7 +88,7 @@ class DateFormatPart:
 class IgnorePart(DateFormatPart):
 
     """
-    Used for separators (T for example), during parsing, the matched value is 
+    Used for separators (T for example), during parsing, the matched value is
     ignored (but checked for presence)
     """
 
@@ -98,15 +100,15 @@ class IgnorePart(DateFormatPart):
 
     def parser_re(self, format):
         return self._parser_re_pattern
-    
+
     def format_part(self, format):
         return self.format_value
 
 
 class DayOfMonthSuffixPart(IgnorePart):
-    
+
     SUFFIXES = {1: 'st', 2: 'nd', 3: 'rd'}
-    
+
     def add_format_context(self, format, date, context):
         if date.day in {11, 12, 13}:  # Special case
             context['day_of_month_suffix'] = 'th'
@@ -128,7 +130,7 @@ class SimplePart(DateFormatPart):
     def __init__(self, format_str, re_str, datepart):
         self.datepart = datepart
         super().__init__(format_str, re_str)
-        
+
     def format_part(self, format):
         return f'{{date.{self.datepart}:0>{len(self.format_str)}}}'
 
@@ -151,10 +153,10 @@ class HourPart(SimplePart):
         if format.is_24hour:
             return super().format_part(format)
         return '{HourPart.HOUR_24_to_12[date.hour]:0>2g}'
-        
+
 
 class ShortYearPart(SimplePart):
-    
+
     VALUE_MATCHES_DATE_COMPONENT_INT = False
 
     def got_value(self, context, value):
@@ -164,30 +166,30 @@ class ShortYearPart(SimplePart):
         else:
             year += 2000
         context[self.datepart] = year
-      
+
     def format_part(self, format):
         return '{date.year % 100:0>2}'
 
 
 class MonthNamePart(SimplePart):
-    
+
     VALUE_MATCHES_DATE_COMPONENT_INT = False
 
     TO_NUM = dict((calendar.month_name[i].lower(), i) for i in range(1, 13))
     FROM_NUM = calendar.month_name
-    
+
     def __init__(self, format_str, re_str):
         super().__init__(format_str, re_str, datepart="month")
-    
+
     def got_value(self, context, value):
         context['month'] = self.TO_NUM[value.lower()]
-    
+
     def format_part(self, format):
         return '{MonthNamePart.FROM_NUM[date.month]}'
-        
+
 
 class ShortMonthNamePart(MonthNamePart):
-    
+
     # Short months to include 4-letter full month names too, as this sometimes can be used
     TO_NUM = dict(((calendar.month_abbr[i].lower(), i) for i in range(1, 13)), june=6, july=7)
     FROM_NUM = calendar.month_abbr
@@ -199,7 +201,7 @@ class ShortMonthNamePart(MonthNamePart):
 class WeekdayNamePart(IgnorePart):
 
     FROM_NUM = list(calendar.day_name)
-    
+
     def format_part(self, format):
         return '{WeekdayNamePart.FROM_NUM[date.weekday()]}'
 
@@ -213,18 +215,47 @@ class ShortWeekdayNamePart(IgnorePart):
 
 
 class MicrosecondPart(DateFormatPart):
-    
+
     def __init__(self, format_str, re_str, value_multiplier):
         self.multiplier = value_multiplier
         super().__init__(format_str, re_str)
-    
+
     def got_value(self, context, value):
         context['microsecond'] = int(value) * self.multiplier
-    
+
     def format_part(self, format):
         return f'{{ int(round(date.microsecond / {self.multiplier}, 0)):0>{len(self.format_str)}g}}'
-    
-    
+
+
+EPOCH = datetime.datetime(1970, 1, 1)
+if HAVE_PYTZ:
+    EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)
+
+class TimestampPart(DateFormatPart):
+
+    def __init__(self, format_str, value_divisor):
+        self.divisor = value_divisor
+        max_digits = 10 + math.ceil(math.log10(value_divisor))
+        re_str = r'\d{1,%s}' % max_digits
+        super().__init__(format_str, re_str)
+
+    def got_value(self, context, value):
+        utc_val = datetime.datetime.utcfromtimestamp(int(value) / self.divisor)
+        context["year"] = utc_val.year
+        context["month"] = utc_val.month
+        context["day"] = utc_val.day
+        context["hour"] = utc_val.hour
+        context["minute"] = utc_val.minute
+        context["second"] = utc_val.second
+        if self.divisor > 1:
+            context["microsecond"] = utc_val.microsecond
+
+    def format_part(self, format):
+        if HAVE_PYTZ:
+            return f'{{int((date - (EPOCH_UTC if date.tzinfo else EPOCH)).total_seconds() * {self.divisor}) }}'
+        return f'{{int((date - EPOCH).total_seconds() * {self.divisor}) }}'
+
+
 class AmPmPart(DateFormatPart):
     RE = "am|pm"
 
@@ -247,7 +278,7 @@ class AmPmPart(DateFormatPart):
                 hour = 0
         context['hour'] = hour
         return value
-        
+
     def format_part(self, format):
         if self.format_str.isupper():
             return '{"PM" if date.hour % 24 >= 12 else "AM"}'
@@ -273,7 +304,7 @@ class UTCOffsetPart(DateFormatPart):
         if sign == "-":
             difference = -difference
         context["tzinfo"] = datetime.timezone(difference)
-    
+
     def add_format_context(self, format, date, context):
         utc_offset = date.utcoffset()
         total_seconds = utc_offset.total_seconds()
@@ -309,7 +340,7 @@ if HAVE_PYTZ:
         def fixup_parsed_timezone(self, format, context, date):
             """
             The correct timezone has been identified first-time round, BUT
-            pytz can't localize the date correctly without knowing what the 
+            pytz can't localize the date correctly without knowing what the
             year/month/day is, due to the fickle nature of humans.
             So extract the timezone, and re-localize correctly
             """
@@ -324,7 +355,7 @@ if HAVE_PYTZ:
         def add_format_context(self, format, date, context):
             if not date.tzinfo:
                 raise ValueError("Cannot format timezone for non-timezone aware dates")
-            
+
             zone = getattr(date.tzinfo, "zone", None)
             if zone:
                 context['timezone_name'] = zone
@@ -336,7 +367,7 @@ if HAVE_PYTZ:
 
         def format_part(self, format):
             return '{timezone_name}'
-            
+
 
 
 class DateFormat:
@@ -345,14 +376,18 @@ class DateFormat:
     # (Or the dateformat will end up looking for two short-years right after each other
     # rather than one long year
     FORMAT_STR_TOKENS = [
-        UTCOffsetPart("+HHMM", r"[\+\-]\d{4}", 
-                      parser=lambda val: (val[0], val[1:3], val[3:5]), 
+        TimestampPart('UNIX_TIMESTAMP', value_divisor=1),
+        TimestampPart('UNIX_MILLISECONDS', value_divisor=1000),
+        TimestampPart('UNIX_MICROSECONDS', value_divisor=1000000),
+        TimestampPart('UNIX_NANOSECONDS', value_divisor=1000000000),
+        UTCOffsetPart("+HHMM", r"[\+\-]\d{4}",
+                      parser=lambda val: (val[0], val[1:3], val[3:5]),
                       to_str_format="{utc_sign}{utc_hours_abs:0>2g}{utc_mins_abs:0>2g}"),
-        UTCOffsetPart("+HH:MM", r"[\+\-]\d{2}:\d{2}", 
-                      parser=lambda val: (val[0], val[1:3], val[4:6]), 
+        UTCOffsetPart("+HH:MM", r"[\+\-]\d{2}:\d{2}",
+                      parser=lambda val: (val[0], val[1:3], val[4:6]),
                       to_str_format="{utc_sign}{utc_hours_abs:0>2g}:{utc_mins_abs:0>2g}"),
-        UTCOffsetPart("+HH", r"[\+\-]\d{2}", 
-                      parser=lambda val: (val[0], val[1:3], 0), 
+        UTCOffsetPart("+HH", r"[\+\-]\d{2}",
+                      parser=lambda val: (val[0], val[1:3], 0),
                       to_str_format="{utc_sign}{utc_hours_abs:0>2g}"),
         WeekdayNamePart("Dddddd", r'[MSTFW]\w{5,8}'),
         WeekdayNamePart("Ddddd", r'[MSTFW]\w{5,8}'),
@@ -441,7 +476,7 @@ class DateFormat:
             else:
                 result = handler(self, context, result)
         return result
-      
+
     def format(self, date):
         """
         Given a datetime.datetime object, return a string representing this date/time,

@@ -12,7 +12,7 @@ import dateformat
 
 
 class TestDateFormat(unittest.TestCase):
-    
+
     SAMPLE_LIST = [
         ("hh:mm:ss", "10:45:30"),
         ("MM/DD/YY", "11/12/14"),
@@ -38,24 +38,24 @@ class TestDateFormat(unittest.TestCase):
         ("DDst of MMMMM, YYYY", "03rd of May, 2222"),
         ("DDst of MMMMM, YYYY", "11th of June, 1985"),
     ]
-    
+
     def test_parsing_simple_date_gives_expected_value(self):
         parser = dateformat.DateFormat("DD/MM/YY hh:mm")
         result = parser.parse("10/12/12 16:23")
         self.assertEqual(result, datetime.datetime(2012, 12, 10, 16, 23))
-        
+
     def test_parsing_various_dates_matches_dateutil_results(self):
         for format, date in self.SAMPLE_LIST:
             expected = dateutil.parser.parse(date)
             actual = dateformat.DateFormat(format).parse(date)
             self.assertEqual(actual, expected)
-            
+
     def test_formatting_a_parsed_date_returns_original_value(self):
         for spec, date in self.SAMPLE_LIST:
             format = dateformat.DateFormat(spec)
             parsed = format.parse(date)
             self.assertEqual(date, format.format(parsed))
-            
+
     def test_invalid_dates_raise_errors(self):
         for spec, valid, invalid in [
             ("pm", "PM", "xx"),
@@ -70,11 +70,11 @@ class TestDateFormat(unittest.TestCase):
             self.assertIsInstance(format.parse(valid), datetime.datetime)
             with self.assertRaises(ValueError):
                 format.parse(invalid)
-    
+
     def test_am_pm_calc_is_correct(self):
         am_hours = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11]
         pm_hours = [12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23]
-        tests = [("am", h) for h in am_hours] + [("pm", h) for h in pm_hours] 
+        tests = [("am", h) for h in am_hours] + [("pm", h) for h in pm_hours]
         for expected, hour in tests:
             for minute, second in [
                 (1, 1),
@@ -82,7 +82,7 @@ class TestDateFormat(unittest.TestCase):
             ]:
                 date = datetime.datetime(2015, 1, 1, hour, minute, second)
                 self.assertEqual(dateformat.DateFormat("am").format(date), expected)
-        
+
     def test_formatting_various_dates_notz(self):
         the_date = datetime.datetime(2015, 1, 2, 3, 14, 25, 678901, None)
         for format, expected in [
@@ -103,6 +103,50 @@ class TestDateFormat(unittest.TestCase):
         date_format = dateformat.DateFormat(dateformat.ISOFORMAT_DATETIME)
         assert date_format.parse("2017-12-6T11:55:44") == expected
         assert date_format.format(date_format.parse("2017-12-6T11:55:44")) == "2017-12-06T11:55:44"
+
+    def test_unix_timestamp_parsing(self):
+        for format_str, value, expected in [
+            ('UNIX_TIMESTAMP', '1956531661', datetime.datetime(2032, 1, 1, 1, 1, 1)),
+            ('UNIX_TIMESTAMP', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_MILLISECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_MICROSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_NANOSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+
+            ('UNIX_TIMESTAMP', '1', datetime.datetime(1970, 1, 1, 0, 0, 1)),
+            ('UNIX_MILLISECONDS', '1', datetime.datetime(1970, 1, 1, 0, 0, 0, 1000)),
+            ('UNIX_MICROSECONDS', '1', datetime.datetime(1970, 1, 1, 0, 0, 0, 1)),
+            ('UNIX_NANOSECONDS', '1', datetime.datetime(1970, 1, 1, 0, 0, 0, 0)),
+
+            ('UNIX_TIMESTAMP', '1553606835', datetime.datetime(2019, 3, 26, 13, 27, 15)),
+            ('UNIX_MILLISECONDS', '1553606835123', datetime.datetime(2019, 3, 26, 13, 27, 15, 123000)),
+            ('UNIX_MICROSECONDS', '1553606835123456', datetime.datetime(2019, 3, 26, 13, 27, 15, 123456)),
+            ('UNIX_NANOSECONDS', '1553606835123456789', datetime.datetime(2019, 3, 26, 13, 27, 15, 123457)),
+        ]:
+            date_format = dateformat.DateFormat(format_str)
+            self.assertEqual(date_format.parse(value), expected)
+
+    def test_unix_timestamp_format(self):
+        for format_str, expected, value in [
+            ('UNIX_TIMESTAMP', '1956531661', datetime.datetime(2032, 1, 1, 1, 1, 1)),
+            ('UNIX_TIMESTAMP.SSS', '1956531661.123', datetime.datetime(2032, 1, 1, 1, 1, 1, 123000)),
+            ('UNIX_TIMESTAMP', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_MILLISECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_MICROSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+            ('UNIX_NANOSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
+
+            ('UNIX_TIMESTAMP', '1', datetime.datetime(1970, 1, 1, 0, 0, 1)),
+            ('UNIX_MILLISECONDS', '1', datetime.datetime(1970, 1, 1, 0, 0, 0, 1000)),
+            ('UNIX_MICROSECONDS', '1', datetime.datetime(1970, 1, 1, 0, 0, 0, 1)),
+            ('UNIX_NANOSECONDS', '1000', datetime.datetime(1970, 1, 1, 0, 0, 0, 1)),
+
+            ('UNIX_TIMESTAMP', '1553606835', datetime.datetime(2019, 3, 26, 13, 27, 15)),
+            ('UNIX_MILLISECONDS', '1553606835123', datetime.datetime(2019, 3, 26, 13, 27, 15, 123000)),
+            ('UNIX_MICROSECONDS', '1553606835123456', datetime.datetime(2019, 3, 26, 13, 27, 15, 123456)),
+            ('UNIX_NANOSECONDS', '1553606835000001792', datetime.datetime(2019, 3, 26, 13, 27, 15, 2)),
+        ]:
+            date_format = dateformat.DateFormat(format_str)
+            self.assertEqual(date_format.format(value), expected)
+
     if HAVE_PYTZ:
         def test_parsing_dates_with_all_named_timezones(self):
             time_base = "2017-12-6T11:55:44"
@@ -119,6 +163,14 @@ class TestDateFormat(unittest.TestCase):
             date = datetime.datetime(2017, 12, 6, 11, 55, 44)
             local_date = pytz.timezone("Europe/Warsaw").localize(date)
             date_format = dateformat.DateFormat(f"{dateformat.ISOFORMAT_DATETIME} (UTC)")
+
+
+        def test_formatting_tzaware_unix_timestamps(self):
+            date = datetime.datetime(2017, 12, 6, 11, 55, 44)
+            local_date = pytz.timezone("Europe/Warsaw").localize(date)
+            date_format = dateformat.DateFormat(f"UNIX_TIMESTAMP")
+            formatted = date_format.format(local_date)
+            self.assertEqual(formatted, '1512557744')
 
 
 if __name__ == '__main__':

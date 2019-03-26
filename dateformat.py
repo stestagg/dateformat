@@ -460,6 +460,11 @@ class DateFormat:
             raise ValueError(f"Could not parse: {bit}")
         return ()
 
+    def matches_format(self, data):
+        if not isinstance(data, str):
+            return False
+        return self._parser_re.match(data) is not None
+
     def parse(self, data, default=RAISE):
         matches = self._parser_re.match(data)
         if matches is None:

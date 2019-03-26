@@ -51,6 +51,17 @@ class TestDateFormat(unittest.TestCase):
         self.assertIsNone(parser.parse('xxx', None))
         self.assertEqual(parser.parse('xxx', '123'), '123')
 
+    def test_matches_format(self):
+        parser = dateformat.DateFormat("DD/MM/YY hh:mm")
+        for value, expected in [
+            ('x', False),
+            ('1/2/34 09:45', True),
+            ('1/2/34 09:45:99', False),
+            ('1/2/1985 09:45', False),
+            (None, False),
+        ]:
+            self.assertEqual(parser.matches_format(value), expected)
+
     def test_parsing_various_dates_matches_dateutil_results(self):
         for format, date in self.SAMPLE_LIST:
             expected = dateutil.parser.parse(date)

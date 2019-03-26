@@ -230,6 +230,16 @@ class MicrosecondPart(DateFormatPart):
         return f'{{ int(round(date.microsecond / {self.multiplier}, 0)):0>{len(self.format_str)}g}}'
 
 
+class FractionalSecond(DateFormatPart):
+
+    def got_value(self, context, value):
+        context['microsecond'] = int(float('0.' + value) * 1000000)
+
+    def format_part(self, format):
+        return '{date.microsecond.__format__("0>06g").rstrip("0")}'
+
+
+
 EPOCH = datetime.datetime(1970, 1, 1)
 if HAVE_PYTZ:
     EPOCH_UTC = datetime.datetime(1970, 1, 1, tzinfo=pytz.UTC)
@@ -409,6 +419,8 @@ class DateFormat:
         MicrosecondPart("SSSS", r"\d{4}", value_multiplier=100),
         MicrosecondPart("SSS", r"\d{3}", value_multiplier=1000),
         MicrosecondPart("SS", r"\d{2}", value_multiplier=10000),
+        FractionalSecond("S", r"\d{1,9}"),
+
         AmPmPart("AM"),AmPmPart("Am"),AmPmPart("am"),
         AmPmPart("PM"),AmPmPart("Pm"),AmPmPart("pm"),
         IgnorePart(" ", r"\s+?"),

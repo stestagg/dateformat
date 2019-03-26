@@ -125,6 +125,15 @@ class TestDateFormat(unittest.TestCase):
     def test_unix_timestamp_parsing(self):
         for format_str, value, expected in [
             ('UNIX_TIMESTAMP', '1956531661', datetime.datetime(2032, 1, 1, 1, 1, 1)),
+
+            ('UNIX_TIMESTAMP.S', '1956531661.1', datetime.datetime(2032, 1, 1, 1, 1, 1, 100000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.01', datetime.datetime(2032, 1, 1, 1, 1, 1, 10000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.001', datetime.datetime(2032, 1, 1, 1, 1, 1, 1000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.0001', datetime.datetime(2032, 1, 1, 1, 1, 1, 100)),
+            ('UNIX_TIMESTAMP.S', '1956531661.00001', datetime.datetime(2032, 1, 1, 1, 1, 1, 10)),
+            ('UNIX_TIMESTAMP.S', '1956531661.000001', datetime.datetime(2032, 1, 1, 1, 1, 1, 1)),
+            ('UNIX_TIMESTAMP.S', '1956531661.0000001', datetime.datetime(2032, 1, 1, 1, 1, 1, 0)),
+
             ('UNIX_TIMESTAMP', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
             ('UNIX_MILLISECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
             ('UNIX_MICROSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
@@ -147,6 +156,13 @@ class TestDateFormat(unittest.TestCase):
         for format_str, expected, value in [
             ('UNIX_TIMESTAMP', '1956531661', datetime.datetime(2032, 1, 1, 1, 1, 1)),
             ('UNIX_TIMESTAMP.SSS', '1956531661.123', datetime.datetime(2032, 1, 1, 1, 1, 1, 123000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.1', datetime.datetime(2032, 1, 1, 1, 1, 1, 100000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.01', datetime.datetime(2032, 1, 1, 1, 1, 1, 10000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.001', datetime.datetime(2032, 1, 1, 1, 1, 1, 1000)),
+            ('UNIX_TIMESTAMP.S', '1956531661.0001', datetime.datetime(2032, 1, 1, 1, 1, 1, 100)),
+            ('UNIX_TIMESTAMP.S', '1956531661.00001', datetime.datetime(2032, 1, 1, 1, 1, 1, 10)),
+            ('UNIX_TIMESTAMP.S', '1956531661.000001', datetime.datetime(2032, 1, 1, 1, 1, 1, 1)),
+            
             ('UNIX_TIMESTAMP', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
             ('UNIX_MILLISECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),
             ('UNIX_MICROSECONDS', '0', datetime.datetime(1970, 1, 1, 0, 0, 0)),

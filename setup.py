@@ -16,7 +16,7 @@ here = path.abspath(path.dirname(__file__))
 
 
 def read(*parts):
-    with open(path.join(here, *parts), 'r') as fp:
+    with open(path.join(here, *parts), 'r', encoding='utf8') as fp:
         return fp.read()
 
 def find_version(*file_paths):

@@ -101,6 +101,16 @@ class TestDateFormat(unittest.TestCase):
                 date = datetime.datetime(2015, 1, 1, hour, minute, second)
                 self.assertEqual(dateformat.DateFormat("am").format(date), expected)
 
+    def test_isoformat_date(self):
+
+        simple_format = dateformat.DateFormat("YYYYMMDD")
+        compliant_format = dateformat.DateFormat("YYYY[MM][DD]")
+        self.assertTrue(simple_format.matches_format("201911"))
+        self.assertFalse(compliant_format.matches_format("201911"))
+
+        self.assertTrue(simple_format.matches_format("20190101"))
+        self.assertTrue(compliant_format.matches_format("20190101"))
+
     def test_formatting_various_dates_notz(self):
         the_date = datetime.datetime(2015, 1, 2, 3, 14, 25, 678901, None)
         for format, expected in [

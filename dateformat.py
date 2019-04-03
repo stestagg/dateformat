@@ -13,12 +13,14 @@ else:
     HAVE_PYTZ = True
 
 
-__version__ = "0.9.5"
+__version__ = "0.9.6"
 
 
 RE_0_TO_60 = "[0-6]?[0-9]"  # In some special cases, e.g. seconds, can actually be '60'
+RE_00_TO_31 = "(?:[0-2][0-9])|(?:3[0-1])"
 RE_0_TO_31 = "(?:[0-2]?[0-9])|(?:3[0-1])"
 RE_0_TO_12 = "(?:0?[0-9])|(?:1[0-2])"
+RE_00_TO_12 = "(?:0[0-9])|(?:1[0-2])"
 RE_0_TO_24 = "(?:[0-1]?[0-9])|(?:2[0-4])"
 
 SECONDS_IN_MINUTE = 60
@@ -34,7 +36,7 @@ ISOFORMAT_DATE = "YYYY-MM-DD"
 ISOFORMAT_TIME = "hh:mm:ss"
 ISOFORMAT_DATETIME = f'{ISOFORMAT_DATE}␣{ISOFORMAT_TIME}'
 
-ISOFORMAT_BASIC_DATE = "YYYYMMDD"
+ISOFORMAT_BASIC_DATE = "YYYY[MM][DD]"
 ISOFORMAT_BASIC_TIME = "hhmmss"
 
 
@@ -405,6 +407,8 @@ class DateFormat:
         WeekdayNamePart("Dddddd", r'[MSTFW]\w{5,8}'),
         WeekdayNamePart("Ddddd", r'[MSTFW]\w{5,8}'),
         ShortWeekdayNamePart("Ddd", r'[MSTFW]\w{2}'),
+        SimplePart("[MM]", RE_00_TO_12, "month"),
+        SimplePart("[DD]", RE_00_TO_31, "day"),
         SimplePart("DD", RE_0_TO_31, "day"),
 
         MonthNamePart("MMMMM", r'[ADFJMNOS]\w{2,8}'),

@@ -126,6 +126,12 @@ class TestDateFormat(unittest.TestCase):
             actual = dateformat.DateFormat(format).format(the_date)
             self.assertEqual(expected, actual)
 
+    def test_zero_milliseconds_isoformat(self):
+        expected = datetime.datetime(2017, 12, 6, 11, 55, 44, 0)
+        date_format = dateformat.DateFormat(dateformat.ISOFORMAT_DATETIME + '.S')
+        assert date_format.parse("2017-12-06T11:55:44.0") == expected
+        assert date_format.format(expected) == "2017-12-06T11:55:44.0"
+
     def test_isoformat_datetime(self):
         expected = datetime.datetime(2017, 12, 6, 11, 55, 44)
         date_format = dateformat.DateFormat(dateformat.ISOFORMAT_DATETIME)

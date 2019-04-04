@@ -238,7 +238,7 @@ class FractionalSecond(DateFormatPart):
         context['microsecond'] = int(float('0.' + value) * 1000000)
 
     def format_part(self, format):
-        return '{date.microsecond.__format__("0>06g").rstrip("0")}'
+        return '{date.microsecond.__format__("0>06g").rstrip("0") or "0"}'
 
 
 

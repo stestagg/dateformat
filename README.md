@@ -83,6 +83,7 @@ Currently, all formatted dates are zero-padded, in the future, this may be contr
 | `DD` | 05 | The zero-padded day of the month. |
 | `MMMMM` | September | Month as locale’s full name |
 | `MMM` | Sep | Month as locale’s abbreviated name |
+| `MM` | 05 | The zero-padded month as number 1 - 12 |
 | `YYYY` | 2017 | Year with century as a number |
 | `YY` | 17 | Year without century as a zero-padded number |
 | `hh` | 09 | Hour as a zero-padded number |
